@@ -1,0 +1,151 @@
+[
+    {
+        "arguments": {
+        "sage.chromosomes": null,
+        "sage.donor": "test_01",
+        "sage.extractNormalName.memory": null,
+        "sage.extractNormalName.timeout": null,
+        "sage.extractTumorName.memory": null,
+        "sage.extractTumorName.timeout": null,
+        "sage.genomeVersion": 38,
+        "sage.hard_min_tumor_qual": null,
+        "sage.hard_min_tumor_raw_alt_support": null,
+        "sage.hard_min_tumor_vaf": null,
+        "sage.mergeBqrDirs.memory": null,
+        "sage.mergeBqrDirs.timeout": null,
+        "sage.mergeVcfs.memory": null,
+        "sage.mergeVcfs.timeout": null,
+        "sage.min_map_quality": null,
+        "sage.normal_bai": {
+                                "contents": {
+                                    "configuration": "/.mounts/labs/gsi/testdata/wisp/test_data/test_01_Ly_R_WG_Novaseq_X_Validation_v1-2.downsampled.bam.bai",
+                                    "externalIds": [
+                                        {
+                                            "id": "TEST",
+                                            "provider": "TEST"
+                                        }
+                                    ]
+                                },
+                                "type": "EXTERNAL"
+            },			
+        "sage.normal_bam": {
+                                "contents": {
+                                    "configuration": "/.mounts/labs/gsi/testdata/wisp/test_data/test_01_Ly_R_WG_Novaseq_X_Validation_v1-2.downsampled.bam",
+                                    "externalIds": [
+                                        {
+                                            "id": "TEST",
+                                            "provider": "TEST"
+                                        }
+                                    ]
+                                },
+                                "type": "EXTERNAL"
+            },		
+        "sage.reduxNormal.memory": null,
+        "sage.reduxNormal.threads": null,
+        "sage.reduxNormal.timeout": null,
+        "sage.reduxTumor.memory": null,
+        "sage.reduxTumor.threads": null,
+        "sage.reduxTumor.timeout": null,
+        "sage.sagePerChromosome.memory": null,
+        "sage.sagePerChromosome.threads": null,
+        "sage.sagePerChromosome.timeout": null,
+        "sage.tumour_bai": {
+                                "contents": {
+                                    "configuration": "/.mounts/labs/gsi/testdata/wisp/test_data/test_01_Nk_P_WG_Novaseq_X_Validation_v1-2.downsampled.bam.bai",
+                                    "externalIds": [
+                                        {
+                                            "id": "TEST",
+                                            "provider": "TEST"
+                                        }
+                                    ]
+                                },
+                                "type": "EXTERNAL"
+            },
+        "sage.tumour_bam": {
+                                "contents": {
+                                    "configuration": "/.mounts/labs/gsi/testdata/wisp/test_data/test_01_Nk_P_WG_Novaseq_X_Validation_v1-2.downsampled.bam",
+                                    "externalIds": [
+                                        {
+                                            "id": "TEST",
+                                            "provider": "TEST"
+                                        }
+                                    ]
+                                },
+                                "type": "EXTERNAL"
+            },
+        "sage.use_redux": false
+        },
+        "description": "sage workflow test_01",
+        "engineArguments": {
+           "write_to_cache": false,
+           "read_from_cache": false
+        },
+        "id": "sage_test_01",
+        "metadata": {
+            "sage.sage_vcf": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            },
+            "sage.sage_vcf_index": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            },
+            "sage.sage_bqr_directory": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            },
+            "sage.tumor_sample_name": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            },
+            "sage.normal_sample_name": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            },
+            "sage.tumor_jitter": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            },
+            "sage.normal_jitter": {
+                "contents": [
+                    {
+                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
+                    }
+                ],
+                "type": "ALL"
+            }
+        },
+        "validators": [
+            {
+                "metrics_calculate": "@CHECKOUT@/tests/calculate.sh",
+                "metrics_compare": "@CHECKOUT@/tests/compare.sh",
+                "output_metrics": "/.mounts/labs/gsi/testdata/sage/output_metrics/workflow_test_01.metrics",
+                "type": "script"
+            }
+        ]
+    }
+]

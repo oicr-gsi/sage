@@ -34,6 +34,10 @@ workflow sage {
     genomeVersion: "Genome version (only 38 supported)"
     use_redux: "Run Redux to generate UMI jitter files"
     chromosomes: "List of chromosomes to process in parallel"
+    min_map_quality: "Minimum map quality"
+    hard_min_tumor_qual: "Minimum hard threshold for tumor base quality"
+    hard_min_tumor_raw_alt_support: "Minimum raw alternate allele support in tumor"
+    hard_min_tumor_vaf: "Minimum tumor variant allele frequency"
   }
 
   Map[String,GenomeResources] resources = {
@@ -138,8 +142,29 @@ workflow sage {
       {
         name: "Redux",
         url: "https://github.com/hartwigmedical/hmftools/tree/master/redux"
+      },
+      {
+        name: "GATK",
+        url: "https://github.com/broadinstitute/gatk"
+      },
+      {
+        name: "bcftools",
+        url: "https://github.com/samtools/bcftools"
+      },
+      {
+        name: "Samtools",
+        url: "https://github.com/samtools/samtools"
       }
     ]
+    output_meta: {
+      sage_vcf: "Merged VCF file containing somatic variants from all chromosomes",
+      sage_vcf_index: "Index file for the merged VCF",
+      sage_bqr_directory: "Merged base quality recalibration directory",
+      tumor_sample_name: "Extracted tumor sample name",
+      normal_sample_name: "Extracted normal sample name",
+      tumor_jitter: "Optional Redux jitter file for tumor sample",
+      normal_jitter: "Optional Redux jitter file for normal sample"
+    }  
   }
 
   output {
@@ -162,6 +187,16 @@ task extractName {
     Int memory = 4
     Int timeout = 4
   }
+
+  parameter_meta {
+    inputBam: "Input BAM file"
+    inputBai: "Input BAI index"
+    refFasta: "Reference genome FASTA"
+    modules: "Required environment modules"
+    memory: "Memory in GB"
+    timeout: "Timeout in hours"
+  }
+
 
   command <<<
     set -euo pipefail
@@ -279,6 +314,31 @@ task sagePerChromosome {
     Int timeout = 24
   }
 
+  parameter_meta {
+    chromosome: "Chromosome to process"
+    tumour_name: "Tumor sample name"
+    tumour_bam: "Tumor BAM file"
+    tumour_bai: "Tumor BAI index"
+    reference_name: "Normal/reference sample name"
+    reference_bam: "Normal BAM file"
+    reference_bai: "Normal BAI index"
+    refFasta: "Reference genome FASTA"
+    ensemblDir: "Ensembl data directory"
+    hotspots: "Hotspots file"
+    driverGenePanel: "Driver gene panel file"
+    highConfBed: "High confidence BED file"
+    tumor_jitter: "Optional tumor jitter file from Redux"
+    normal_jitter: "Optional normal jitter file from Redux"
+    min_map_quality: "Minimum mapping quality threshold"
+    hard_min_tumor_qual: "Minimum hard threshold for tumor base quality"
+    hard_min_tumor_raw_alt_support: "Minimum raw alternate allele support"
+    hard_min_tumor_vaf: "Minimum tumor variant allele frequency"
+    modules: "Required environment modules"
+    threads: "Number of threads"
+    memory: "Memory in GB"
+    timeout: "Timeout in hours"
+  }
+
   command <<<
     set -euo pipefail
     
@@ -332,6 +392,15 @@ task mergeVcfs {
     Int timeout = 4
   }
 
+  parameter_meta {
+    vcfs: "Array of VCF files to merge"
+    vcf_indices: "Array of VCF index files"
+    sample_name: "Sample identifier for the merged VCF"
+    modules: "Required environment modules"
+    memory: "Memory in GB"
+    timeout: "Timeout in hours"
+  }
+
   command <<<
     set -euo pipefail
     
@@ -372,6 +441,13 @@ task mergeBqrDirs {
     Int memory = 4
     Int timeout = 2
   }
+
+  parameter_meta {
+      bqr_zips: "Array of BQR zip files to merge"
+      sample_name: "Sample identifier for the merged BQR"
+      memory: "Memory in GB"
+      timeout: "Timeout in hours"
+    }
 
   command <<<
     set -euo pipefail
