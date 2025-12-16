@@ -1,0 +1,106 @@
+## Commands
+This section lists command(s) run by SAGE workflow
+
+* Running SAGE
+
+
+```
+    set -euo pipefail
+    gatk --java-options "-Xmx1g" GetSampleName \
+      -R ~{refFasta} \
+      -I ~{inputBam} \
+      -O sample_name.txt \
+      -encode
+```
+```
+    set -euo pipefail
+    
+    # Run Redux to generate jitter file
+    java -Xmx~{memory}G -jar /.mounts/labs/gsiprojects/gsi/gsiusers/gpeng/workflow/sage/test/redux_v1.2.2.jar \
+    -sample ~{sample_name} \
+    -input_bam ~{input_bam} \
+    -ref_genome ~{refFasta} \
+    -ref_genome_version 38 \
+    -bamtool $SAMTOOLS_ROOT/bin/samtools \
+    -threads ~{threads} \
+    -log_level DEBUG \
+    -output_dir ./
+        
+    java -jar redux.jar 
+    -sample SAMPLE_ID 
+    -input_bam SAMPLE_ID.lane_01.bam,SAMPLE_ID.lane_02.bam,SAMPLE_ID.lane_03.bam  
+    -ref_genome /path_to_fasta_files/
+    -ref_genome_version V37
+    -unmap_regions /ref_data/unmap_regions.37.tsv
+    -ref_genome_msi_file /ref_data/msi_jitter_sites.37.tsv.gz 
+    -write_stats 
+    -bamtool /path_to_samtools/ 
+    -output_dir /path_to_output/
+    -log_level DEBUG 
+    -threads 24
+    # Redux outputs: sample.redux.jitter.tsv
+```
+```
+    set -euo pipefail
+    
+    mkdir -p ~{tumour_name}.sage.bqr
+    
+    java -Xmx32G -cp $SAGE_ROOT/sage.jar com.hartwig.hmftools.sage.SageApplication \
+      -tumor ~{tumour_name} \
+      -tumor_bam ~{tumour_bam} \
+      -reference ~{reference_name} \
+      -reference_bam ~{reference_bam} \
+      -ref_genome_version 38 \
+      -ref_genome ~{refFasta} \
+      -ensembl_data_dir ~{ensemblDir} \
+      -high_confidence_bed ~{highConfBed} \
+      ~{if defined(tumor_jitter) then "-tumor_jitter " + tumor_jitter else ""} \
+      ~{if defined(normal_jitter) then "-reference_jitter " + normal_jitter else ""} \
+      -specific_chr ~{chromosome} \
+      -output_vcf ~{tumour_name}.~{chromosome}.sage.vcf.gz \
+      -threads ~{threads} \
+      -min_map_quality ~{min_map_quality} \
+      -hard_min_tumor_qual ~{hard_min_tumor_qual} \
+      -hard_min_tumor_raw_alt_support ~{hard_min_tumor_raw_alt_support} \
+      -hard_min_tumor_vaf ~{hard_min_tumor_vaf}
+
+    # Move BQR files
+    mv *.sage.bqr.tsv ~{tumour_name}.sage.bqr/ 2>/dev/null || true
+    zip -r ~{tumour_name}.~{chromosome}.sage.bqr.zip ~{tumour_name}.sage.bqr/
+```
+```
+    set -euo pipefail
+    
+    # Create file list for bcftools concat
+    for vcf in ~{sep=' ' vcfs}; do
+      echo "$vcf" >> vcf_list.txt
+    done
+    
+    # Sort by chromosome order
+    sort -V vcf_list.txt > vcf_list_sorted.txt
+    
+    # Concatenate VCFs in order
+    bcftools concat \
+      --file-list vcf_list_sorted.txt \
+      --output-type z \
+      --output ~{sample_name}.sage.vcf.gz
+    
+    # Index the merged VCF
+    tabix -p vcf ~{sample_name}.sage.vcf.gz
+```
+```
+    set -euo pipefail
+    
+    mkdir -p ~{sample_name}.sage.bqr
+    
+    # Unzip all BQR files into the same directory
+    for bqr_zip in ~{sep=' ' bqr_zips}; do
+      unzip -o "$bqr_zip" -d temp_bqr/
+    done
+    
+    # Move all .tsv files to final directory
+    find temp_bqr -name "*.sage.bqr.tsv" -exec mv {} ~{sample_name}.sage.bqr/ \;
+    
+    # Zip the merged directory
+    zip -r ~{sample_name}.sage.bqr.zip ~{sample_name}.sage.bqr/
+```
