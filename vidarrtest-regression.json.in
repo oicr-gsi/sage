@@ -106,22 +106,6 @@
                 ],
                 "type": "ALL"
             },
-            "sage.tumor_sample_name": {
-                "contents": [
-                    {
-                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
-                    }
-                ],
-                "type": "ALL"
-            },
-            "sage.normal_sample_name": {
-                "contents": [
-                    {
-                        "outputDirectory": "@SCRATCH@/@DATE@_Workflow_sage_test_01_@JENKINSID@"
-                    }
-                ],
-                "type": "ALL"
-            },
             "sage.tumor_jitter": {
                 "contents": [
                     {
