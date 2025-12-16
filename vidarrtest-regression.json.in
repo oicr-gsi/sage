@@ -7,7 +7,7 @@
         "sage.extractNormalName.timeout": null,
         "sage.extractTumorName.memory": null,
         "sage.extractTumorName.timeout": null,
-        "sage.genomeVersion": 38,
+        "sage.genomeVersion": null,
         "sage.hard_min_tumor_qual": null,
         "sage.hard_min_tumor_raw_alt_support": null,
         "sage.hard_min_tumor_vaf": null,
