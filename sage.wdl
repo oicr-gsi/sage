@@ -1,7 +1,6 @@
 version 1.0
 
 struct GenomeResources {
-    String modules
     String sageModules
     String refFasta
     String ensemblDir
@@ -19,7 +18,6 @@ workflow sage {
     String donor
     String genomeVersion = "38"
     Boolean use_redux = false
-    String sage_version = "3.4.4" #or "4.1"
     Array[String] chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"]
     Int min_map_quality = 10 
     Int hard_min_tumor_qual = 50
@@ -35,19 +33,17 @@ workflow sage {
     donor: "Patient/donor identifier"
     genomeVersion: "Genome version (only 38 supported)"
     use_redux: "Run Redux to generate UMI jitter files"
-    sage_version: "SAGE version to use (3.4.4 or 4.1)"
     chromosomes: "List of chromosomes to process in parallel"
   }
 
   Map[String,GenomeResources] resources = {
     "38": {
-      "modules": "sage/4.1 hg38/p12 hmftools-data/53138 samtools",
-      "sageModules": "sage/4.1 hg38/p12 hmftools-data/53138",
+      "sageModules": "sage/3.4.4 sage-data/1.0 hg38/p12 hmftools-data/53138 samtools",
       "refFasta": "$HG38_ROOT/hg38_random.fa",
       "ensemblDir": "$HMFTOOLS_DATA_ROOT/ensembl_data",
-      "hotspots": "/.mounts/labs/gsiprojects/gsi/gsiusers/gpeng/dev/sage/KnownHotspots.hg38.fixed.vcf.gz",
-      "driverGenePanel": "/.mounts/labs/gsiprojects/gsi/gsiusers/gpeng/dev/sage/DriverGenePanel.hg38.tsv",
-      "highConfBed": "/.mounts/labs/gsiprojects/gsi/gsiusers/gpeng/dev/sage/NA12878_GIAB_highconf_IllFB-IllGATKHC-CG-Ion-Solid_ALLCHROM_v3.2.2_highconf.bed"
+      "hotspots": "$SAGE_DATA_ROOT/hotspots",
+      "driverGenePanel": "$SAGE_DATA_ROOT/driverGenePanel",
+      "highConfBed": "$SAGE_DATA_ROOT/highConfidenceBed"
     }
   }
 
@@ -75,7 +71,7 @@ workflow sage {
         input_bam = tumour_bam,
         input_bai = tumour_bai,
         refFasta = resources[genomeVersion].refFasta,
-        modules = resources[genomeVersion].modules
+        modules = resources[genomeVersion].sageModules
     }
 
     call redux as reduxNormal {
@@ -84,7 +80,7 @@ workflow sage {
         input_bam = normal_bam,
         input_bai = normal_bai,
         refFasta = resources[genomeVersion].refFasta,
-        modules = resources[genomeVersion].modules
+        modules = resources[genomeVersion].sageModules
     }
   }
 
@@ -110,7 +106,6 @@ workflow sage {
         hard_min_tumor_qual = hard_min_tumor_qual,
         hard_min_tumor_raw_alt_support = hard_min_tumor_raw_alt_support,
         hard_min_tumor_vaf = hard_min_tumor_vaf,
-        sage_version = sage_version,
         modules = resources[genomeVersion].sageModules
     }
   }
@@ -278,7 +273,6 @@ task sagePerChromosome {
     Int hard_min_tumor_qual
     Int hard_min_tumor_raw_alt_support
     Float hard_min_tumor_vaf
-    String sage_version
     String modules
     Int threads = 8
     Int memory = 40
@@ -290,14 +284,7 @@ task sagePerChromosome {
     
     mkdir -p ~{tumour_name}.sage.bqr
     
-    # Select SAGE version
-    if [ "~{sage_version}" == "4.1" ]; then
-        sage_jar="$SAGE_ROOT/sage.jar"
-    else
-        sage_jar="/.mounts/labs/gsiprojects/gsi/gsiusers/gpeng/dev/sage/sage_v3.4.4.jar"
-    fi
-    
-    java -Xmx32G -cp ${sage_jar} com.hartwig.hmftools.sage.SageApplication \
+    java -Xmx32G -cp $SAGE_ROOT/sage.jar com.hartwig.hmftools.sage.SageApplication \
       -tumor ~{tumour_name} \
       -tumor_bam ~{tumour_bam} \
       -reference ~{reference_name} \
@@ -306,7 +293,6 @@ task sagePerChromosome {
       -ref_genome ~{refFasta} \
       -ensembl_data_dir ~{ensemblDir} \
       -high_confidence_bed ~{highConfBed} \
-      -hotspots ~{hotspots} \
       ~{if defined(tumor_jitter) then "-tumor_jitter " + tumor_jitter else ""} \
       ~{if defined(normal_jitter) then "-reference_jitter " + normal_jitter else ""} \
       -specific_chr ~{chromosome} \
