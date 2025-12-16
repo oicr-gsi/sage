@@ -160,8 +160,6 @@ workflow sage {
       sage_vcf: "Merged VCF file containing somatic variants from all chromosomes",
       sage_vcf_index: "Index file for the merged VCF",
       sage_bqr_directory: "Merged base quality recalibration directory",
-      tumor_sample_name: "Extracted tumor sample name",
-      normal_sample_name: "Extracted normal sample name",
       tumor_jitter: "Optional Redux jitter file for tumor sample",
       normal_jitter: "Optional Redux jitter file for normal sample"
     }  
@@ -171,8 +169,6 @@ workflow sage {
     File sage_vcf = mergeVcfs.merged_vcf
     File sage_vcf_index = mergeVcfs.merged_vcf_index
     File sage_bqr_directory = mergeBqrDirs.merged_bqr_zip
-    String tumor_sample_name = extractTumorName.sample_name
-    String normal_sample_name = extractNormalName.sample_name
     File? tumor_jitter = reduxTumor.jitter_file
     File? normal_jitter = reduxNormal.jitter_file
   }

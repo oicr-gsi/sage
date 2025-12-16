@@ -73,8 +73,6 @@ Output | Type | Description | Labels
 `sage_vcf`|File|Merged VCF file containing somatic variants from all chromosomes|
 `sage_vcf_index`|File|Index file for the merged VCF|
 `sage_bqr_directory`|File|Merged base quality recalibration directory|
-`tumor_sample_name`|String|Extracted tumor sample name|
-`normal_sample_name`|String|Extracted normal sample name|
 `tumor_jitter`|File?|Optional Redux jitter file for tumor sample|
 `normal_jitter`|File?|Optional Redux jitter file for normal sample|
 
