@@ -7,3 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-12-16
 ### Added
 - Add the first workable version.
+
+## [1.0.1] - 2026-02-10
+### Changed
+- Cahnged sage module version to 4.2.

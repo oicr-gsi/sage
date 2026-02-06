@@ -16,7 +16,7 @@ workflow sage {
     File normal_bam
     File normal_bai
     String donor
-    String genomeVersion = "38"
+    String genomeVersion = "hg38"
     Boolean use_redux = false
     Array[String] chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"]
     Int min_map_quality = 10 
@@ -31,7 +31,7 @@ workflow sage {
     normal_bam: "Input normal BAM file"
     normal_bai: "Input normal BAI index"
     donor: "Patient/donor identifier"
-    genomeVersion: "Genome version (only 38 supported)"
+    genomeVersion: "Genome version (only hg38 supported)"
     use_redux: "Run Redux to generate UMI jitter files"
     chromosomes: "List of chromosomes to process in parallel"
     min_map_quality: "Minimum map quality"
@@ -41,8 +41,8 @@ workflow sage {
   }
 
   Map[String,GenomeResources] resources = {
-    "38": {
-      "sageModules": "sage/3.4.4 sage-data/1.0 hg38/p12 hmftools-data/53138 samtools",
+    "hg38": {
+      "sageModules": "sage/4.2 sage-data/1.0 hg38/p12 hmftools-data/53138 samtools",
       "refFasta": "$HG38_ROOT/hg38_random.fa",
       "ensemblDir": "$HMFTOOLS_DATA_ROOT/ensembl_data",
       "hotspots": "$SAGE_DATA_ROOT/hotspots",
@@ -99,6 +99,7 @@ workflow sage {
         reference_name = extractNormalName.sample_name,
         reference_bam = normal_bam,
         reference_bai = normal_bai,
+        genomeVersion = genomeVersion,
         refFasta = resources[genomeVersion].refFasta,
         ensemblDir = resources[genomeVersion].ensemblDir,
         hotspots = resources[genomeVersion].hotspots,
@@ -251,19 +252,6 @@ task redux {
     -log_level DEBUG \
     -output_dir ./
         
-    java -jar redux.jar 
-    -sample SAMPLE_ID 
-    -input_bam SAMPLE_ID.lane_01.bam,SAMPLE_ID.lane_02.bam,SAMPLE_ID.lane_03.bam  
-    -ref_genome /path_to_fasta_files/
-    -ref_genome_version V37
-    -unmap_regions /ref_data/unmap_regions.37.tsv
-    -ref_genome_msi_file /ref_data/msi_jitter_sites.37.tsv.gz 
-    -write_stats 
-    -bamtool /path_to_samtools/ 
-    -output_dir /path_to_output/
-    -log_level DEBUG 
-    -threads 24
-    # Redux outputs: sample.redux.jitter.tsv
   >>>
 
   runtime {
@@ -293,6 +281,7 @@ task sagePerChromosome {
     String reference_name
     File reference_bam
     File reference_bai
+    String genomeVersion
     String refFasta
     String ensemblDir
     String hotspots
@@ -318,6 +307,7 @@ task sagePerChromosome {
     reference_name: "Normal/reference sample name"
     reference_bam: "Normal BAM file"
     reference_bai: "Normal BAI index"
+    genomeVersion: "version of genome build"
     refFasta: "Reference genome FASTA"
     ensemblDir: "Ensembl data directory"
     hotspots: "Hotspots file"
@@ -339,13 +329,14 @@ task sagePerChromosome {
     set -euo pipefail
     
     mkdir -p ~{tumour_name}.sage.bqr
+    genome_version=$(if [ "~{genomeVersion}" == "hg38" ]; then echo "38"; else echo "19"; fi)
     
     java -Xmx32G -cp $SAGE_ROOT/sage.jar com.hartwig.hmftools.sage.SageApplication \
       -tumor ~{tumour_name} \
       -tumor_bam ~{tumour_bam} \
       -reference ~{reference_name} \
       -reference_bam ~{reference_bam} \
-      -ref_genome_version 38 \
+      -ref_genome_version $genome_version \
       -ref_genome ~{refFasta} \
       -ensembl_data_dir ~{ensemblDir} \
       -high_confidence_bed ~{highConfBed} \
@@ -357,9 +348,9 @@ task sagePerChromosome {
       -min_map_quality ~{min_map_quality} \
       -hard_min_tumor_qual ~{hard_min_tumor_qual} \
       -hard_min_tumor_raw_alt_support ~{hard_min_tumor_raw_alt_support} \
-      -hard_min_tumor_vaf ~{hard_min_tumor_vaf}
+      -hard_min_tumor_vaf ~{hard_min_tumor_vaf} \
+      -skip_msi_jitter
 
-    # Move BQR files
     mv *.sage.bqr.tsv ~{tumour_name}.sage.bqr/ 2>/dev/null || true
     zip -r ~{tumour_name}.~{chromosome}.sage.bqr.zip ~{tumour_name}.sage.bqr/
   >>>
