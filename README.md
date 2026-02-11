@@ -35,7 +35,7 @@ Parameter|Value|Description
 #### Optional workflow parameters:
 Parameter|Value|Default|Description
 ---|---|---|---
-`genomeVersion`|String|"38"|Genome version (only 38 supported)
+`genomeVersion`|String|"hg38"|Genome version (only hg38 supported)
 `use_redux`|Boolean|false|Run Redux to generate UMI jitter files
 `chromosomes`|Array[String]|["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"]|List of chromosomes to process in parallel
 `min_map_quality`|Int|10|Minimum map quality
